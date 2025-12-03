@@ -1,4 +1,4 @@
-# bird 🐦
+# bird 🐦 — fast X CLI for tweeting, replying, and reading
 
 `bird` is a fast X CLI for tweeting, replying, and reading — powered by cookies or Sweetistics.
 
