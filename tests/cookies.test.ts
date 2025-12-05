@@ -136,4 +136,44 @@ describe('cookies', () => {
       );
     });
   });
+
+  describe('extractCookiesFromChrome', () => {
+    it('returns cookies when sqlite yields hex values', async () => {
+      const fs = await import('node:fs');
+      const { execSync } = await import('node:child_process');
+      // Pretend Chrome cookie DB exists
+      (fs.existsSync as unknown as vi.Mock).mockImplementation((path: string) => path.includes('Cookies'));
+      (fs.copyFileSync as unknown as vi.Mock).mockImplementation(() => {});
+      // sqlite output with hex strings ("test_auth", "test_ct0")
+      (execSync as unknown as vi.Mock).mockImplementation((cmd: string) => {
+        if (cmd.includes('sqlite3')) {
+          return 'auth_token|746573745f61757468\nct0|746573745f637430';
+        }
+        return '';
+      });
+
+      const { extractCookiesFromChrome } = await import('../src/lib/cookies.js');
+      const result = await extractCookiesFromChrome('Default');
+
+      expect(result.cookies.authToken).toBe('test_auth');
+      expect(result.cookies.ct0).toBe('test_ct0');
+      expect(result.cookies.source).toContain('Chrome');
+      expect(result.warnings).toHaveLength(0);
+    });
+
+    it('warns when Chrome DB exists but contains no cookies', async () => {
+      const fs = await import('node:fs');
+      const { execSync } = await import('node:child_process');
+      (fs.existsSync as unknown as vi.Mock).mockImplementation((path: string) => path.includes('Cookies'));
+      (fs.copyFileSync as unknown as vi.Mock).mockImplementation(() => {});
+      (execSync as unknown as vi.Mock).mockReturnValue('');
+
+      const { extractCookiesFromChrome } = await import('../src/lib/cookies.js');
+      const result = await extractCookiesFromChrome('Default');
+
+      expect(result.cookies.authToken).toBeNull();
+      expect(result.cookies.ct0).toBeNull();
+      expect(result.warnings.some((w) => w.includes('No Twitter cookies found in Chrome'))).toBe(true);
+    });
+  });
 });
