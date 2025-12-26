@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveEngineMode, shouldUseSweetistics } from '../src/lib/engine.js';
+import { resolveEngineMode, shouldAllowSweetisticsFallback, shouldUseSweetistics } from '../src/lib/engine.js';
 
 describe('engine', () => {
   it('normalizes engine values and defaults to auto', () => {
@@ -18,5 +18,12 @@ describe('engine', () => {
   it('forces engine selection when explicitly set', () => {
     expect(shouldUseSweetistics('sweetistics', false)).toBe(true);
     expect(shouldUseSweetistics('graphql', true)).toBe(false);
+  });
+
+  it('only allows Sweetistics fallback in auto mode', () => {
+    expect(shouldAllowSweetisticsFallback('auto', true)).toBe(true);
+    expect(shouldAllowSweetisticsFallback('auto', false)).toBe(false);
+    expect(shouldAllowSweetisticsFallback('graphql', true)).toBe(false);
+    expect(shouldAllowSweetisticsFallback('sweetistics', true)).toBe(false);
   });
 });

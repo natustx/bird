@@ -57,6 +57,8 @@ bird query-ids --fresh
 - `--engine graphql` — use Twitter/X GraphQL with cookies (Chrome/Firefox/env/flags).
 - `--engine sweetistics` — use Sweetistics API key (no browser cookies needed).
 
+Note: fallback to Sweetistics only happens in `--engine auto`. `--engine graphql` is strict (no fallback).
+
 Global options:
 - `--timeout <ms>`: abort requests after the given timeout (milliseconds).
 - `--plain`: stable output (no emoji, no color).

@@ -17,7 +17,12 @@ import JSON5 from 'json5';
 import kleur from 'kleur';
 import { resolveCliInvocation } from './lib/cli-args.js';
 import { resolveCredentials } from './lib/cookies.js';
-import { type EngineMode, resolveEngineMode, shouldUseSweetistics } from './lib/engine.js';
+import {
+  type EngineMode,
+  resolveEngineMode,
+  shouldAllowSweetisticsFallback,
+  shouldUseSweetistics,
+} from './lib/engine.js';
 import { extractTweetId } from './lib/extract-tweet-id.js';
 import { mentionsQueryFromUserOption, normalizeHandle } from './lib/normalize-handle.js';
 import {
@@ -429,7 +434,7 @@ program
     if (result.success) {
       console.log(`${p('ok')}Tweet posted successfully!`);
       console.log(`${l('url')}https://x.com/i/status/${result.tweetId}`);
-    } else if (sweetistics.apiKey) {
+    } else if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
       console.error(`${p('warn')}GraphQL tweet failed (${result.error}); trying Sweetistics fallback...`);
       const fallback = await new SweetisticsClient({
         baseUrl: sweetistics.baseUrl,
@@ -558,7 +563,7 @@ program
     if (result.success) {
       console.log(`${p('ok')}Reply posted successfully!`);
       console.log(`${l('url')}https://x.com/i/status/${result.tweetId}`);
-    } else if (sweetistics.apiKey) {
+    } else if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
       console.error(`${p('warn')}GraphQL reply failed (${result.error}); trying Sweetistics fallback...`);
       const fallback = await new SweetisticsClient({
         baseUrl: sweetistics.baseUrl,
@@ -657,7 +662,7 @@ program
         }
         console.log(formatStatsLine(result.tweet, output));
       }
-    } else if (sweetistics.apiKey) {
+    } else if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
       console.error(`${p('warn')}GraphQL read failed (${result.error}); trying Sweetistics fallback...`);
       const fallback = await new SweetisticsClient({
         baseUrl: sweetistics.baseUrl,
@@ -741,7 +746,7 @@ program
 
     if (result.success && result.tweets) {
       printTweets(result.tweets, { json: cmdOpts.json, emptyMessage: 'No replies found.' });
-    } else if (sweetistics.apiKey) {
+    } else if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
       console.error(`${p('warn')}GraphQL replies failed (${result.error}); trying Sweetistics fallback...`);
       const fallback = await new SweetisticsClient({
         baseUrl: sweetistics.baseUrl,
@@ -816,7 +821,7 @@ program
 
     if (result.success && result.tweets) {
       printTweets(result.tweets, { json: cmdOpts.json, emptyMessage: 'No thread tweets found.' });
-    } else if (sweetistics.apiKey) {
+    } else if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
       console.error(`${p('warn')}GraphQL thread failed (${result.error}); trying Sweetistics fallback...`);
       const fallback = await new SweetisticsClient({
         baseUrl: sweetistics.baseUrl,
@@ -893,7 +898,7 @@ program
 
     if (result.success && result.tweets) {
       printTweets(result.tweets, { json: cmdOpts.json, emptyMessage: 'No tweets found.' });
-    } else if (sweetistics.apiKey) {
+    } else if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
       console.error(`${p('warn')}GraphQL search failed (${result.error}); trying Sweetistics fallback...`);
       const fallback = await new SweetisticsClient({
         baseUrl: sweetistics.baseUrl,
@@ -988,7 +993,7 @@ program
       const who = await client.getCurrentUser();
       const handle = normalizeHandle(who.user?.username);
       if (!handle) {
-        if (sweetistics.apiKey) {
+        if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
           console.error(
             `${p('warn')}Could not determine current user (${who.error ?? 'Unknown error'}); trying Sweetistics fallback...`,
           );
@@ -1018,7 +1023,7 @@ program
 
     if (result.success && result.tweets) {
       printTweets(result.tweets, { json: cmdOpts.json, emptyMessage: 'No mentions found.' });
-    } else if (sweetistics.apiKey) {
+    } else if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
       console.error(`${p('warn')}GraphQL mentions failed (${result.error}); trying Sweetistics fallback...`);
       const fallback = await new SweetisticsClient({
         baseUrl: sweetistics.baseUrl,
@@ -1115,7 +1120,7 @@ program
       console.log(`${l('credentials')}${credentialSource}`);
     } else {
       // Fallback: try Sweetistics if available
-      if (sweetistics.apiKey) {
+      if (shouldAllowSweetisticsFallback(engine, Boolean(sweetistics.apiKey))) {
         const fallback = await new SweetisticsClient({
           baseUrl: sweetistics.baseUrl,
           apiKey: sweetistics.apiKey,

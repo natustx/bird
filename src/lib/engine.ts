@@ -13,3 +13,7 @@ export function shouldUseSweetistics(engine: EngineMode, _hasApiKey: boolean): b
   if (engine === 'graphql') return false;
   return false; // auto: GraphQL primary, Sweetistics only as fallback
 }
+
+export function shouldAllowSweetisticsFallback(engine: EngineMode, hasApiKey: boolean): boolean {
+  return engine === 'auto' && hasApiKey;
+}
