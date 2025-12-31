@@ -180,6 +180,9 @@ type GraphqlTweetResult = {
       }>;
     }>;
   };
+  quoted_status_result?: {
+    result?: GraphqlTweetResult;
+  };
 };
 
 export type TweetResult =
@@ -212,6 +215,15 @@ export interface TweetData {
   likeCount?: number;
   conversationId?: string;
   inReplyToStatusId?: string;
+  quotedTweet?: {
+    id: string;
+    text: string;
+    author: {
+      username: string;
+      name: string;
+    };
+    authorId?: string;
+  };
 }
 
 export interface GetTweetResult {
@@ -686,6 +698,29 @@ export class TwitterClient {
     const text = this.extractTweetText(result);
     if (!text) return undefined;
 
+    // Extract quoted tweet if present
+    let quotedTweet: TweetData['quotedTweet'] = undefined;
+    const quotedResult = result.quoted_status_result?.result;
+    if (quotedResult?.rest_id) {
+      const quotedUserResult = quotedResult?.core?.user_results?.result;
+      const quotedUserLegacy = quotedUserResult?.legacy;
+      const quotedUserCore = quotedUserResult?.core;
+      const quotedUsername = quotedUserLegacy?.screen_name ?? quotedUserCore?.screen_name;
+      const quotedName = quotedUserLegacy?.name ?? quotedUserCore?.name ?? quotedUsername;
+      const quotedText = this.extractTweetText(quotedResult);
+      if (quotedUsername && quotedText) {
+        quotedTweet = {
+          id: quotedResult.rest_id,
+          text: quotedText,
+          author: {
+            username: quotedUsername,
+            name: quotedName || quotedUsername,
+          },
+          authorId: quotedUserResult?.rest_id,
+        };
+      }
+    }
+
     return {
       id: result.rest_id,
       text,
@@ -700,6 +735,7 @@ export class TwitterClient {
         name: name || username,
       },
       authorId: userId,
+      quotedTweet,
     };
   }
 

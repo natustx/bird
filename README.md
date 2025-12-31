@@ -121,6 +121,24 @@ Environment shortcuts:
 - `read` returns full text for Notes and Articles when present.
 - Use `--plain` for stable, script-friendly output (no emoji, no color).
 
+### JSON Schema
+
+When using `--json`, tweet objects include:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Tweet ID |
+| `text` | string | Full tweet text (includes Note/Article content when present) |
+| `author` | object | `{ username, name }` |
+| `authorId` | string | Author's user ID |
+| `createdAt` | string | Timestamp |
+| `replyCount` | number | Number of replies |
+| `retweetCount` | number | Number of retweets |
+| `likeCount` | number | Number of likes |
+| `conversationId` | string | Thread conversation ID |
+| `inReplyToStatusId` | string? | Parent tweet ID (present if this is a reply) |
+| `quotedTweet` | object? | Embedded quote tweet with `{ id, text, author, authorId }` (present if this is a quote tweet) |
+
 ## Query IDs (GraphQL)
 
 X rotates GraphQL “query IDs” frequently. Each GraphQL operation is addressed as:
