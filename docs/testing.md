@@ -25,3 +25,4 @@ Notes:
 - If you don't tweet, set `BIRD_LIVE_TWEET_ID` to a known tweet ID to use for `read/replies/thread`.
 - Optional: set `BIRD_LIVE_BOOKMARK_FOLDER_ID` to exercise `bookmarks --folder-id`.
 - `bird query-ids --fresh` live coverage: set `BIRD_LIVE_QUERY_IDS_FRESH=1`.
+- The live suite may hit internal X endpoints (v1.1 REST) as fallback; it still uses cookie auth (no developer API key).

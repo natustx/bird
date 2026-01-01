@@ -409,7 +409,7 @@ export function withUsers<TBase extends AbstractConstructor<TwitterClientBase>>(
         }
 
         // GraphQL Followers regularly returns 404 (queryId churn / endpoint flakiness).
-        // Fallback to the legacy 1.1 endpoint so the CLI stays useful.
+        // Fallback to the internal v1.1 REST endpoint used by the web client (cookie-auth; no dev API key).
         const restAttempt = await this.getFollowersViaRest(userId, count);
         if (restAttempt.success) {
           return restAttempt;
