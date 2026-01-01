@@ -4,6 +4,7 @@
 
 ### Added
 - `likes` command to list your liked tweets (thanks @swairshah).
+- Quoted tweet data in JSON output + `--quote-depth` (thanks @alexknowshtml).
 
 ### Changed
 - Query ID updater now tracks the Likes GraphQL operation.
@@ -13,9 +14,6 @@
 ### Added
 - `bookmarks` command to list your bookmarked tweets.
 - `bookmarks --folder-id` to fetch bookmark folders (thanks @tylerseymour).
-
-### Added
-- Quoted tweet data in JSON output + `--quote-depth` (thanks @alexknowshtml).
 
 ### Changed
 - Cookie extraction now uses `@steipete/sweet-cookie` (drops `sqlite3` CLI + custom browser readers in `bird`).
