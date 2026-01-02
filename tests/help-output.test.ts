@@ -21,6 +21,8 @@ describe('root help output', () => {
 
     expect(help).toContain('bird <tweet-id-or-url>');
     expect(help).toContain('--json');
+    expect(help).toContain('--json-full');
+    expect(help).toContain('_raw');
   });
 
   it('shows global options in subcommand help', () => {
@@ -47,5 +49,52 @@ describe('root help output', () => {
     expect(help).toContain('--ct0');
     expect(help).toContain('--timeout');
     expect(help).toContain('--quote-depth');
+  });
+
+  it('shows --json-full option in read command help', () => {
+    const ctx = createCliContext([]);
+    const program = createProgram(ctx);
+    const cmd = program.commands.find((c) => c.name() === 'read');
+    if (!cmd) {
+      throw new Error('Expected "read" command to be registered');
+    }
+
+    let help = '';
+    const output = {
+      writeOut: (s) => {
+        help += s;
+      },
+      writeErr: () => {},
+    };
+    program.configureOutput(output);
+    cmd.configureOutput(output);
+
+    cmd.outputHelp();
+
+    expect(help).toContain('--json-full');
+    expect(help).toContain('_raw');
+  });
+
+  it('shows --json-full option in search command help', () => {
+    const ctx = createCliContext([]);
+    const program = createProgram(ctx);
+    const cmd = program.commands.find((c) => c.name() === 'search');
+    if (!cmd) {
+      throw new Error('Expected "search" command to be registered');
+    }
+
+    let help = '';
+    const output = {
+      writeOut: (s) => {
+        help += s;
+      },
+      writeErr: () => {},
+    };
+    program.configureOutput(output);
+    cmd.configureOutput(output);
+
+    cmd.outputHelp();
+
+    expect(help).toContain('--json-full');
   });
 });

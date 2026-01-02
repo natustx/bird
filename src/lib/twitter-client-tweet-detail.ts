@@ -10,10 +10,16 @@ import {
   parseTweetsFromInstructions,
 } from './twitter-client-utils.js';
 
+/** Options for tweet fetching methods */
+export interface TweetFetchOptions {
+  /** Include raw GraphQL response in `_raw` field */
+  includeRaw?: boolean;
+}
+
 export interface TwitterClientTweetDetailMethods {
-  getTweet(tweetId: string): Promise<GetTweetResult>;
-  getReplies(tweetId: string): Promise<SearchResult>;
-  getThread(tweetId: string): Promise<SearchResult>;
+  getTweet(tweetId: string, options?: TweetFetchOptions): Promise<GetTweetResult>;
+  getReplies(tweetId: string, options?: TweetFetchOptions): Promise<SearchResult>;
+  getThread(tweetId: string, options?: TweetFetchOptions): Promise<SearchResult>;
 }
 
 export function withTweetDetails<TBase extends AbstractConstructor<TwitterClientBase>>(
@@ -246,7 +252,8 @@ export function withTweetDetails<TBase extends AbstractConstructor<TwitterClient
     /**
      * Get tweet details by ID
      */
-    async getTweet(tweetId: string): Promise<GetTweetResult> {
+    async getTweet(tweetId: string, options: TweetFetchOptions = {}): Promise<GetTweetResult> {
+      const { includeRaw = false } = options;
       const response = await this.fetchTweetDetail(tweetId);
       if (!response.success) {
         return response;
@@ -271,7 +278,7 @@ export function withTweetDetails<TBase extends AbstractConstructor<TwitterClient
           tweetId,
         );
 
-      const mapped = mapTweetResult(tweetResult, this.quoteDepth);
+      const mapped = mapTweetResult(tweetResult, { quoteDepth: this.quoteDepth, includeRaw });
       if (mapped) {
         if (tweetResult?.article) {
           const title = firstText(tweetResult.article.article_results?.result?.title, tweetResult.article.title);
@@ -294,14 +301,15 @@ export function withTweetDetails<TBase extends AbstractConstructor<TwitterClient
     /**
      * Get replies to a tweet by ID
      */
-    async getReplies(tweetId: string): Promise<SearchResult> {
+    async getReplies(tweetId: string, options: TweetFetchOptions = {}): Promise<SearchResult> {
+      const { includeRaw = false } = options;
       const response = await this.fetchTweetDetail(tweetId);
       if (!response.success) {
         return response;
       }
 
       const instructions = response.data.threaded_conversation_with_injections_v2?.instructions;
-      const tweets = parseTweetsFromInstructions(instructions, this.quoteDepth);
+      const tweets = parseTweetsFromInstructions(instructions, { quoteDepth: this.quoteDepth, includeRaw });
       const replies = tweets.filter((tweet) => tweet.inReplyToStatusId === tweetId);
 
       return { success: true, tweets: replies };
@@ -310,14 +318,15 @@ export function withTweetDetails<TBase extends AbstractConstructor<TwitterClient
     /**
      * Get full conversation thread for a tweet ID
      */
-    async getThread(tweetId: string): Promise<SearchResult> {
+    async getThread(tweetId: string, options: TweetFetchOptions = {}): Promise<SearchResult> {
+      const { includeRaw = false } = options;
       const response = await this.fetchTweetDetail(tweetId);
       if (!response.success) {
         return response;
       }
 
       const instructions = response.data.threaded_conversation_with_injections_v2?.instructions;
-      const tweets = parseTweetsFromInstructions(instructions, this.quoteDepth);
+      const tweets = parseTweetsFromInstructions(instructions, { quoteDepth: this.quoteDepth, includeRaw });
 
       const target = tweets.find((t) => t.id === tweetId);
       const rootId = target?.conversationId || tweetId;

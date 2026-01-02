@@ -4,8 +4,14 @@ import { buildSearchFeatures } from './twitter-client-features.js';
 import type { SearchResult, TweetData } from './twitter-client-types.js';
 import { extractCursorFromInstructions, parseTweetsFromInstructions } from './twitter-client-utils.js';
 
+/** Options for search methods */
+export interface SearchFetchOptions {
+  /** Include raw GraphQL response in `_raw` field */
+  includeRaw?: boolean;
+}
+
 export interface TwitterClientSearchMethods {
-  search(query: string, count?: number): Promise<SearchResult>;
+  search(query: string, count?: number, options?: SearchFetchOptions): Promise<SearchResult>;
 }
 
 export function withSearch<TBase extends AbstractConstructor<TwitterClientBase>>(
@@ -20,7 +26,8 @@ export function withSearch<TBase extends AbstractConstructor<TwitterClientBase>>
     /**
      * Search for tweets matching a query
      */
-    async search(query: string, count = 20): Promise<SearchResult> {
+    async search(query: string, count = 20, options: SearchFetchOptions = {}): Promise<SearchResult> {
+      const { includeRaw = false } = options;
       const features = buildSearchFeatures();
       const pageSize = 20;
       const seen = new Set<string>();
@@ -113,7 +120,7 @@ export function withSearch<TBase extends AbstractConstructor<TwitterClientBase>>
             }
 
             const instructions = data.data?.search_by_raw_query?.search_timeline?.timeline?.instructions;
-            const pageTweets = parseTweetsFromInstructions(instructions, this.quoteDepth);
+            const pageTweets = parseTweetsFromInstructions(instructions, { quoteDepth: this.quoteDepth, includeRaw });
             const nextCursor = extractCursorFromInstructions(instructions);
 
             return { success: true as const, tweets: pageTweets, cursor: nextCursor, had404 };

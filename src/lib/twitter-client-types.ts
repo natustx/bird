@@ -184,6 +184,9 @@ export interface TweetData {
   inReplyToStatusId?: string;
   // Optional quoted tweet; depth controlled by quoteDepth (default: 1).
   quotedTweet?: TweetData;
+  // Raw GraphQL response (included when --json-full is used).
+  // Structure may change as Twitter's API evolves.
+  _raw?: GraphqlTweetResult;
 }
 
 export interface GetTweetResult {

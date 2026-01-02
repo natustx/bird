@@ -10,7 +10,8 @@ export function registerSearchCommands(program: Command, ctx: CliContext): void 
     .argument('<query>', 'Search query (e.g., "@clawdbot" or "from:clawdbot")')
     .option('-n, --count <number>', 'Number of tweets to fetch', '10')
     .option('--json', 'Output as JSON')
-    .action(async (query: string, cmdOpts: { count?: string; json?: boolean }) => {
+    .option('--json-full', 'Output as JSON with full raw API response in _raw field')
+    .action(async (query: string, cmdOpts: { count?: string; json?: boolean; jsonFull?: boolean }) => {
       const opts = program.opts();
       const timeoutMs = ctx.resolveTimeoutFromOptions(opts);
       const quoteDepth = ctx.resolveQuoteDepthFromOptions(opts);
@@ -28,10 +29,11 @@ export function registerSearchCommands(program: Command, ctx: CliContext): void 
       }
 
       const client = new TwitterClient({ cookies, timeoutMs, quoteDepth });
-      const result = await client.search(query, count);
+      const includeRaw = cmdOpts.jsonFull ?? false;
+      const result = await client.search(query, count, { includeRaw });
 
       if (result.success && result.tweets) {
-        ctx.printTweets(result.tweets, { json: cmdOpts.json, emptyMessage: 'No tweets found.' });
+        ctx.printTweets(result.tweets, { json: cmdOpts.json || cmdOpts.jsonFull, emptyMessage: 'No tweets found.' });
       } else {
         console.error(`${ctx.p('err')}Search failed: ${result.error}`);
         process.exit(1);
@@ -44,7 +46,8 @@ export function registerSearchCommands(program: Command, ctx: CliContext): void 
     .option('-u, --user <handle>', 'User handle (e.g. @steipete)')
     .option('-n, --count <number>', 'Number of tweets to fetch', '10')
     .option('--json', 'Output as JSON')
-    .action(async (cmdOpts: { user?: string; count?: string; json?: boolean }) => {
+    .option('--json-full', 'Output as JSON with full raw API response in _raw field')
+    .action(async (cmdOpts: { user?: string; count?: string; json?: boolean; jsonFull?: boolean }) => {
       const opts = program.opts();
       const timeoutMs = ctx.resolveTimeoutFromOptions(opts);
       const quoteDepth = ctx.resolveQuoteDepthFromOptions(opts);
@@ -84,10 +87,11 @@ export function registerSearchCommands(program: Command, ctx: CliContext): void 
         }
       }
 
-      const result = await client.search(query, count);
+      const includeRaw = cmdOpts.jsonFull ?? false;
+      const result = await client.search(query, count, { includeRaw });
 
       if (result.success && result.tweets) {
-        ctx.printTweets(result.tweets, { json: cmdOpts.json, emptyMessage: 'No mentions found.' });
+        ctx.printTweets(result.tweets, { json: cmdOpts.json || cmdOpts.jsonFull, emptyMessage: 'No mentions found.' });
       } else {
         console.error(`${ctx.p('err')}Failed to fetch mentions: ${result.error}`);
         process.exit(1);

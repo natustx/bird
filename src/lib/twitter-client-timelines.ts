@@ -4,10 +4,16 @@ import { buildBookmarksFeatures, buildLikesFeatures } from './twitter-client-fea
 import type { GraphqlTweetResult, SearchResult } from './twitter-client-types.js';
 import { parseTweetsFromInstructions } from './twitter-client-utils.js';
 
+/** Options for timeline fetch methods */
+export interface TimelineFetchOptions {
+  /** Include raw GraphQL response in `_raw` field */
+  includeRaw?: boolean;
+}
+
 export interface TwitterClientTimelineMethods {
-  getBookmarks(count?: number): Promise<SearchResult>;
-  getLikes(count?: number): Promise<SearchResult>;
-  getBookmarkFolderTimeline(folderId: string, count?: number): Promise<SearchResult>;
+  getBookmarks(count?: number, options?: TimelineFetchOptions): Promise<SearchResult>;
+  getLikes(count?: number, options?: TimelineFetchOptions): Promise<SearchResult>;
+  getBookmarkFolderTimeline(folderId: string, count?: number, options?: TimelineFetchOptions): Promise<SearchResult>;
 }
 
 export function withTimelines<TBase extends AbstractConstructor<TwitterClientBase>>(
@@ -37,7 +43,8 @@ export function withTimelines<TBase extends AbstractConstructor<TwitterClientBas
     /**
      * Get the authenticated user's bookmarks
      */
-    async getBookmarks(count = 20): Promise<SearchResult> {
+    async getBookmarks(count = 20, options: TimelineFetchOptions = {}): Promise<SearchResult> {
+      const { includeRaw = false } = options;
       const variables = {
         count,
         includePromotedContent: false,
@@ -104,7 +111,7 @@ export function withTimelines<TBase extends AbstractConstructor<TwitterClientBas
             }
 
             const instructions = data.data?.bookmark_timeline_v2?.timeline?.instructions;
-            const tweets = parseTweetsFromInstructions(instructions, this.quoteDepth);
+            const tweets = parseTweetsFromInstructions(instructions, { quoteDepth: this.quoteDepth, includeRaw });
 
             return { success: true as const, tweets, had404 };
           } catch (error) {
@@ -135,7 +142,8 @@ export function withTimelines<TBase extends AbstractConstructor<TwitterClientBas
     /**
      * Get the authenticated user's liked tweets
      */
-    async getLikes(count = 20): Promise<SearchResult> {
+    async getLikes(count = 20, options: TimelineFetchOptions = {}): Promise<SearchResult> {
+      const { includeRaw = false } = options;
       const userResult = await this.getCurrentUser();
       if (!userResult.success || !userResult.user) {
         return { success: false, error: userResult.error ?? 'Could not determine current user' };
@@ -212,7 +220,7 @@ export function withTimelines<TBase extends AbstractConstructor<TwitterClientBas
             }
 
             const instructions = data.data?.user?.result?.timeline?.timeline?.instructions;
-            const tweets = parseTweetsFromInstructions(instructions, this.quoteDepth);
+            const tweets = parseTweetsFromInstructions(instructions, { quoteDepth: this.quoteDepth, includeRaw });
 
             return { success: true as const, tweets, had404 };
           } catch (error) {
@@ -243,7 +251,12 @@ export function withTimelines<TBase extends AbstractConstructor<TwitterClientBas
     /**
      * Get the authenticated user's bookmark folder timeline
      */
-    async getBookmarkFolderTimeline(folderId: string, count = 20): Promise<SearchResult> {
+    async getBookmarkFolderTimeline(
+      folderId: string,
+      count = 20,
+      options: TimelineFetchOptions = {},
+    ): Promise<SearchResult> {
+      const { includeRaw = false } = options;
       const variablesWithCount = {
         bookmark_collection_id: folderId,
         includePromotedContent: true,
@@ -313,7 +326,7 @@ export function withTimelines<TBase extends AbstractConstructor<TwitterClientBas
             }
 
             const instructions = data.data?.bookmark_collection_timeline?.timeline?.instructions;
-            const tweets = parseTweetsFromInstructions(instructions, this.quoteDepth);
+            const tweets = parseTweetsFromInstructions(instructions, { quoteDepth: this.quoteDepth, includeRaw });
 
             return { success: true as const, tweets, had404 };
           } catch (error) {

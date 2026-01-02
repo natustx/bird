@@ -130,7 +130,8 @@ export function registerUserCommands(program: Command, ctx: CliContext): void {
     .description('Get your liked tweets')
     .option('-n, --count <number>', 'Number of likes to fetch', '20')
     .option('--json', 'Output as JSON')
-    .action(async (cmdOpts: { count?: string; json?: boolean }) => {
+    .option('--json-full', 'Output as JSON with full raw API response in _raw field')
+    .action(async (cmdOpts: { count?: string; json?: boolean; jsonFull?: boolean }) => {
       const opts = program.opts();
       const timeoutMs = ctx.resolveTimeoutFromOptions(opts);
       const quoteDepth = ctx.resolveQuoteDepthFromOptions(opts);
@@ -148,10 +149,14 @@ export function registerUserCommands(program: Command, ctx: CliContext): void {
       }
 
       const client = new TwitterClient({ cookies, timeoutMs, quoteDepth });
-      const result = await client.getLikes(count);
+      const includeRaw = cmdOpts.jsonFull ?? false;
+      const result = await client.getLikes(count, { includeRaw });
 
       if (result.success && result.tweets) {
-        ctx.printTweets(result.tweets, { json: cmdOpts.json, emptyMessage: 'No liked tweets found.' });
+        ctx.printTweets(result.tweets, {
+          json: cmdOpts.json || cmdOpts.jsonFull,
+          emptyMessage: 'No liked tweets found.',
+        });
       } else {
         console.error(`${ctx.p('err')}Failed to fetch likes: ${result.error}`);
         process.exit(1);
