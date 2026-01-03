@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `lists` + `list-timeline` commands for Twitter Lists (#21) — thanks @harperreed
+
 ## 0.5.1 — 2026-01-01
 
 ### Changed
