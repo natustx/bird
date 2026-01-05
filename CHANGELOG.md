@@ -7,10 +7,10 @@
 - `lists` + `list-timeline` commands for Twitter Lists (#21) — thanks @harperreed
 - Tweet JSON output now includes media items (photos, videos, GIFs) (#14) — thanks @Hormold
 - Bookmarks can resume pagination from a cursor (#26) — thanks @leonho
+- `unbookmark` command to remove bookmarks (#22) — thanks @mbelinky.
 
 ### Changed
 - Feature flags can be overridden at runtime via `features.json` (refreshable via `query-ids`).
-
 ## 0.5.1 — 2026-01-01
 
 ### Changed
