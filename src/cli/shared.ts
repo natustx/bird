@@ -323,10 +323,10 @@ export function createCliContext(normalizedArgs: string[], env: NodeJS.ProcessEn
 
       // Display tweet text, with article indicator if present
       if (tweet.article) {
-        // For articles: show preview if text is just the title (home timeline),
-        // otherwise show full text (single tweet detail)
-        const isFullBody = tweet.text.length > tweet.article.title.length + 50;
-        if (isFullBody) {
+        // Full body mode: text starts with article title (from extractArticleText)
+        // Preview mode: text is short tweet intro that doesn't start with title
+        const hasFullBody = tweet.text.startsWith(tweet.article.title);
+        if (hasFullBody) {
           console.log(`📰 ${tweet.text}`);
         } else {
           console.log(`📰 ${tweet.article.title}`);
@@ -355,6 +355,13 @@ export function createCliContext(normalizedArgs: string[], env: NodeJS.ProcessEn
         const truncated = qtText.length > maxLen ? `${qtText.slice(0, maxLen)}...` : qtText;
         for (const line of truncated.split('\n').slice(0, 4)) {
           console.log(`│  ${line}`);
+        }
+        // Display quoted tweet media
+        if (tweet.quotedTweet.media && tweet.quotedTweet.media.length > 0) {
+          for (const m of tweet.quotedTweet.media) {
+            const label = m.type === 'video' ? '🎬' : m.type === 'animated_gif' ? '🔄' : '🖼️';
+            console.log(`│  ${label} ${m.url}`);
+          }
         }
         console.log(`└─ https://x.com/${tweet.quotedTweet.author.username}/status/${tweet.quotedTweet.id}`);
       }
