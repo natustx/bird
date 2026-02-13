@@ -111,7 +111,7 @@ export function registerBookmarksCommand(program: Command, ctx: CliContext): voi
         if (!bookmarks || bookmarks.length === 0) {
           const emptyMessage = folderId ? 'No bookmarks found in folder.' : 'No bookmarks found.';
           const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
-          ctx.printTweetsResult(result, { json: isJson, usePagination, emptyMessage });
+          await ctx.printTweetsResult(result, { json: isJson, usePagination, emptyMessage });
           return;
         }
 
@@ -230,7 +230,7 @@ export function registerBookmarksCommand(program: Command, ctx: CliContext): voi
 
         const emptyMessage = folderId ? 'No bookmarks found in folder.' : 'No bookmarks found.';
         const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
-        ctx.printTweetsResult(
+        await ctx.printTweetsResult(
           { tweets: uniqueTweets, nextCursor: result.nextCursor },
           { json: isJson, usePagination, emptyMessage },
         );

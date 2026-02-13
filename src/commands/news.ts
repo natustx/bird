@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
 import type { CliContext } from '../cli/shared.js';
+import { writeJsonStdout } from '../lib/output.js';
 import { TwitterClient } from '../lib/twitter-client.js';
 import type { ExploreTab, NewsItem } from '../lib/twitter-client-news.js';
 
@@ -13,13 +14,13 @@ function formatPostCount(count: number): string {
   return String(count);
 }
 
-function printNewsItems(
+async function printNewsItems(
   items: NewsItem[],
   ctx: CliContext,
   opts: { json?: boolean; emptyMessage?: string; tweetLimit?: number } = {},
-): void {
+): Promise<void> {
   if (opts.json) {
-    console.log(JSON.stringify(items, null, 2));
+    await writeJsonStdout(items);
     return;
   }
 
@@ -158,7 +159,7 @@ export function registerNewsCommand(program: Command, ctx: CliContext): void {
         });
 
         if (result.success) {
-          printNewsItems(result.items, ctx, {
+          await printNewsItems(result.items, ctx, {
             json: cmdOpts.json || cmdOpts.jsonFull,
             emptyMessage: 'No news items found.',
             tweetLimit: withTweets ? tweetsPerItem : undefined,

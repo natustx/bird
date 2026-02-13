@@ -5,7 +5,7 @@ import type { Command } from 'commander';
 import { parsePaginationFlags } from '../cli/pagination.js';
 import type { CliContext } from '../cli/shared.js';
 import { extractListId } from '../lib/extract-list-id.js';
-import { hyperlink } from '../lib/output.js';
+import { hyperlink, writeJsonStdout } from '../lib/output.js';
 import type { TwitterList } from '../lib/twitter-client.js';
 import { TwitterClient } from '../lib/twitter-client.js';
 
@@ -60,7 +60,7 @@ export function registerListsCommand(program: Command, ctx: CliContext): void {
 
       if (result.success && result.lists) {
         if (cmdOpts.json) {
-          console.log(JSON.stringify(result.lists, null, 2));
+          await writeJsonStdout(result.lists);
         } else {
           const emptyMessage = cmdOpts.memberOf ? 'You are not a member of any lists.' : 'You do not own any lists.';
           if (result.lists.length === 0) {
@@ -141,7 +141,7 @@ export function registerListsCommand(program: Command, ctx: CliContext): void {
 
         if (result.success) {
           const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
-          ctx.printTweetsResult(result, {
+          await ctx.printTweetsResult(result, {
             json: isJson,
             usePagination,
             emptyMessage: 'No tweets found in this list.',

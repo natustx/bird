@@ -13,6 +13,7 @@ import {
   resolveOutputConfigFromArgv,
   resolveOutputConfigFromCommander,
   statusPrefix,
+  writeJsonStdout,
 } from '../lib/output.js';
 import type { TweetData } from '../lib/twitter-client.js';
 
@@ -51,7 +52,7 @@ export type CliContext = {
   resolveQuoteDepthFromOptions: (options: { quoteDepth?: string | number }) => number | undefined;
   resolveCredentialsFromOptions: (opts: CredentialsOptions) => ReturnType<typeof resolveCredentials>;
   loadMedia: (opts: { media: string[]; alts: string[] }) => MediaSpec[];
-  printTweets: (tweets: TweetData[], opts?: { json?: boolean; emptyMessage?: string; showSeparator?: boolean }) => void;
+  printTweets: (tweets: TweetData[], opts?: { json?: boolean; emptyMessage?: string; showSeparator?: boolean }) => Promise<void>;
   printTweetsResult: (
     result: {
       tweets?: TweetData[];
@@ -62,7 +63,7 @@ export type CliContext = {
       usePagination: boolean;
       emptyMessage: string;
     },
-  ) => void;
+  ) => Promise<void>;
   extractTweetId: (tweetIdOrUrl: string) => string;
 };
 
@@ -321,12 +322,12 @@ export function createCliContext(normalizedArgs: string[], env: NodeJS.ProcessEn
     return specs;
   }
 
-  function printTweets(
+  async function printTweets(
     tweets: TweetData[],
     opts: { json?: boolean; emptyMessage?: string; showSeparator?: boolean } = {},
   ) {
     if (opts.json) {
-      console.log(JSON.stringify(tweets, null, 2));
+      await writeJsonStdout(tweets);
       return;
     }
     if (tweets.length === 0) {
@@ -404,16 +405,16 @@ export function createCliContext(normalizedArgs: string[], env: NodeJS.ProcessEn
     }
   }
 
-  function printTweetsResult(
+  async function printTweetsResult(
     result: { tweets?: TweetData[]; nextCursor?: string },
     opts: { json: boolean; usePagination: boolean; emptyMessage: string },
   ) {
     const tweets = result.tweets ?? [];
     if (opts.json && opts.usePagination) {
-      console.log(JSON.stringify({ tweets, nextCursor: result.nextCursor ?? null }, null, 2));
+      await writeJsonStdout({ tweets, nextCursor: result.nextCursor ?? null });
       return;
     }
-    printTweets(tweets, { json: opts.json, emptyMessage: opts.emptyMessage });
+    await printTweets(tweets, { json: opts.json, emptyMessage: opts.emptyMessage });
   }
 
   return {

@@ -5,6 +5,7 @@ import {
   getFeatureOverridesSnapshot,
   refreshFeatureOverridesCache,
 } from '../lib/runtime-features.js';
+import { writeJsonStdout } from '../lib/output.js';
 import { runtimeQueryIds } from '../lib/runtime-query-ids.js';
 
 function countFeatureOverrides(overrides: FeatureOverrides): number {
@@ -51,18 +52,12 @@ export function registerQueryIdsCommand(program: Command, ctx: CliContext): void
       const info = await runtimeQueryIds.getSnapshotInfo();
       if (!info) {
         if (cmdOpts.json) {
-          console.log(
-            JSON.stringify(
-              {
-                cached: false,
-                cachePath: runtimeQueryIds.cachePath,
-                featuresPath: featureSnapshot.cachePath,
-                features: featureSnapshot.overrides,
-              },
-              null,
-              2,
-            ),
-          );
+          await writeJsonStdout({
+            cached: false,
+            cachePath: runtimeQueryIds.cachePath,
+            featuresPath: featureSnapshot.cachePath,
+            features: featureSnapshot.overrides,
+          });
           return;
         }
         console.log(`${ctx.p('warn')}No cached query IDs yet.`);
@@ -72,23 +67,17 @@ export function registerQueryIdsCommand(program: Command, ctx: CliContext): void
       }
 
       if (cmdOpts.json) {
-        console.log(
-          JSON.stringify(
-            {
-              cached: true,
-              cachePath: info.cachePath,
-              fetchedAt: info.snapshot.fetchedAt,
-              isFresh: info.isFresh,
-              ageMs: info.ageMs,
-              ids: info.snapshot.ids,
-              discovery: info.snapshot.discovery,
-              featuresPath: featureSnapshot.cachePath,
-              features: featureSnapshot.overrides,
-            },
-            null,
-            2,
-          ),
-        );
+        await writeJsonStdout({
+          cached: true,
+          cachePath: info.cachePath,
+          fetchedAt: info.snapshot.fetchedAt,
+          isFresh: info.isFresh,
+          ageMs: info.ageMs,
+          ids: info.snapshot.ids,
+          discovery: info.snapshot.discovery,
+          featuresPath: featureSnapshot.cachePath,
+          features: featureSnapshot.overrides,
+        });
         return;
       }
 

@@ -69,10 +69,11 @@ describe('users commands', () => {
       nextCursor: 'next-1',
     });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation((() => true) as never);
     await program.parseAsync(['node', 'bird', 'following', '--cursor', 'prev', '--json']);
 
-    const payload = JSON.parse(String(logSpy.mock.calls[0]?.[0]));
+    const output = writeSpy.mock.calls.map((call) => String(call[0])).join('');
+    const payload = JSON.parse(output);
     expect(payload.users).toHaveLength(1);
     expect(payload.nextCursor).toBe('next-1');
   });
@@ -111,10 +112,11 @@ describe('users commands', () => {
       nextCursor: 'next-1',
     });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation((() => true) as never);
     await program.parseAsync(['node', 'bird', 'following', '--all', '--max-pages', '1', '--json']);
 
-    const payload = JSON.parse(String(logSpy.mock.calls[0]?.[0]));
+    const output = writeSpy.mock.calls.map((call) => String(call[0])).join('');
+    const payload = JSON.parse(output);
     expect(payload.users).toHaveLength(1);
     expect(payload.nextCursor).toBe('next-1');
   });
@@ -170,12 +172,13 @@ describe('users commands', () => {
         nextCursor: undefined,
       });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation((() => true) as never);
     const run = program.parseAsync(['node', 'bird', 'following', '--all', '--json']);
     await vi.advanceTimersByTimeAsync(1000);
     await run;
 
-    const payload = JSON.parse(String(logSpy.mock.calls[0]?.[0]));
+    const output = writeSpy.mock.calls.map((call) => String(call[0])).join('');
+    const payload = JSON.parse(output);
     expect(payload.users).toHaveLength(3);
     expect(payload.users.map((user: { id: string }) => user.id)).toEqual(['1', '2', '3']);
   });
@@ -198,15 +201,16 @@ describe('users commands', () => {
       .mockResolvedValueOnce({
         success: true,
         users: [{ id: '1', username: 'alpha', name: 'Alpha' }],
-        nextCursor: 'cursor-1',
-      });
+       nextCursor: 'cursor-1',
+     });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation((() => true) as never);
     const run = program.parseAsync(['node', 'bird', 'following', '--all', '--json']);
     await vi.advanceTimersByTimeAsync(1000);
     await run;
 
-    const payload = JSON.parse(String(logSpy.mock.calls[0]?.[0]));
+    const output = writeSpy.mock.calls.map((call) => String(call[0])).join('');
+    const payload = JSON.parse(output);
     expect(payload.users).toHaveLength(1);
     expect(payload.nextCursor).toBeNull();
     expect(followingSpy).toHaveBeenCalledTimes(2);

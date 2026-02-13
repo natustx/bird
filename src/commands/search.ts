@@ -70,7 +70,7 @@ export function registerSearchCommands(program: Command, ctx: CliContext): void 
 
         if (result.success) {
           const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
-          ctx.printTweetsResult(result, {
+          await ctx.printTweetsResult(result, {
             json: isJson,
             usePagination: Boolean(usePagination),
             emptyMessage: 'No tweets found.',
@@ -133,7 +133,7 @@ export function registerSearchCommands(program: Command, ctx: CliContext): void 
       const result = await client.search(query, count, { includeRaw });
 
       if (result.success) {
-        ctx.printTweets(result.tweets, {
+        await ctx.printTweets(result.tweets, {
           json: cmdOpts.json || cmdOpts.jsonFull,
           emptyMessage: 'No mentions found.',
         });

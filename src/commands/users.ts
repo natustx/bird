@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import type { CliContext } from '../cli/shared.js';
 import { normalizeHandle } from '../lib/normalize-handle.js';
+import { writeJsonStdout } from '../lib/output.js';
 import { TwitterClient } from '../lib/twitter-client.js';
 import type { AboutAccountProfile, TwitterUser } from '../lib/twitter-client-types.js';
 
@@ -162,7 +163,7 @@ async function runUserListCommand(
     }
 
     if (cmdOpts.json) {
-      console.log(JSON.stringify({ users: allUsers, nextCursor: nextCursor ?? null }, null, 2));
+      await writeJsonStdout({ users: allUsers, nextCursor: nextCursor ?? null });
     } else {
       console.error(`${ctx.p('info')}Total: ${allUsers.length} users`);
       if (nextCursor) {
@@ -179,9 +180,9 @@ async function runUserListCommand(
   if (result.success && result.users) {
     if (cmdOpts.json) {
       if (usePagination) {
-        console.log(JSON.stringify({ users: result.users, nextCursor: result.nextCursor ?? null }, null, 2));
+        await writeJsonStdout({ users: result.users, nextCursor: result.nextCursor ?? null });
       } else {
-        console.log(JSON.stringify(result.users, null, 2));
+        await writeJsonStdout(result.users);
       }
     } else {
       if (result.users.length === 0) {
@@ -284,7 +285,7 @@ export function registerUserCommands(program: Command, ctx: CliContext): void {
 
         if (result.success) {
           const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
-          ctx.printTweetsResult(result, {
+          await ctx.printTweetsResult(result, {
             json: isJson,
             usePagination: Boolean(usePagination),
             emptyMessage: 'No liked tweets found.',
@@ -366,7 +367,7 @@ export function registerUserCommands(program: Command, ctx: CliContext): void {
 
       if (result.success && result.aboutProfile) {
         if (cmdOpts.json) {
-          console.log(JSON.stringify(result.aboutProfile, null, 2));
+          await writeJsonStdout(result.aboutProfile);
         } else {
           for (const line of formatAboutProfile(result.aboutProfile, ctx, normalizedHandle)) {
             console.log(line);

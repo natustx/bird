@@ -1,3 +1,5 @@
+import { once } from 'node:events';
+
 export type OutputConfig = {
   plain: boolean;
   emoji: boolean;
@@ -115,4 +117,19 @@ export function hyperlink(url: string, text?: string, cfg?: OutputConfig): strin
 export function formatTweetUrlLine(tweetId: string, cfg: OutputConfig): string {
   const url = formatTweetUrl(tweetId);
   return `${labelPrefix('url', cfg)}${hyperlink(url, url, cfg)}`;
+}
+
+/**
+ * Write JSON to stdout and await flush. Prevents Bun compiled binaries from
+ * truncating large piped output when the process exits before stdout drains.
+ */
+export async function writeJsonStdout(data: unknown): Promise<void> {
+  const json = JSON.stringify(data, null, 2) + '\n';
+  const ok = process.stdout.write(json);
+  if (ok) {
+    return;
+  }
+
+  // Backpressure: wait for stdout to drain so piped output isn't truncated.
+  await once(process.stdout, 'drain');
 }

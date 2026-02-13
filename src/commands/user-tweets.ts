@@ -124,7 +124,7 @@ export function registerUserTweetsCommand(program: Command, ctx: CliContext): vo
 
         if (result.success) {
           const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
-          ctx.printTweetsResult(result, {
+          await ctx.printTweetsResult(result, {
             json: isJson,
             usePagination: wantsPaginationOutput,
             emptyMessage: `No tweets found for @${username}.`,

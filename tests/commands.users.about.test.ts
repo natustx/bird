@@ -34,10 +34,11 @@ describe('users about command', () => {
       },
     });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation((() => true) as never);
     await program.parseAsync(['node', 'bird', 'about', 'pablotovar_', '--json']);
 
-    const payload = JSON.parse(String(logSpy.mock.calls[0]?.[0]));
+    const output = writeSpy.mock.calls.map((call) => String(call[0])).join('');
+    const payload = JSON.parse(output);
     expect(payload).toEqual({
       accountBasedIn: 'Spain',
       source: 'Spain App Store',

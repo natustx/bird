@@ -1,7 +1,7 @@
 import type { Command } from 'commander';
 import { parsePaginationFlags } from '../cli/pagination.js';
 import type { CliContext } from '../cli/shared.js';
-import { formatStatsLine } from '../lib/output.js';
+import { formatStatsLine, writeJsonStdout } from '../lib/output.js';
 import { TwitterClient } from '../lib/twitter-client.js';
 
 export function registerReadCommands(program: Command, ctx: CliContext): void {
@@ -35,9 +35,9 @@ export function registerReadCommands(program: Command, ctx: CliContext): void {
 
       if (result.success && result.tweet) {
         if (cmdOpts.json || cmdOpts.jsonFull) {
-          console.log(JSON.stringify(result.tweet, null, 2));
+          await writeJsonStdout(result.tweet);
         } else {
-          ctx.printTweets([result.tweet], { showSeparator: false });
+          await ctx.printTweets([result.tweet], { showSeparator: false });
           console.log(formatStatsLine(result.tweet, ctx.getOutput()));
         }
       } else {
@@ -104,7 +104,7 @@ export function registerReadCommands(program: Command, ctx: CliContext): void {
 
         const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
         if (result.tweets) {
-          ctx.printTweetsResult(result, {
+          await ctx.printTweetsResult(result, {
             json: isJson,
             usePagination: pagination.usePagination,
             emptyMessage: 'No replies found.',
@@ -181,7 +181,7 @@ export function registerReadCommands(program: Command, ctx: CliContext): void {
 
         const isJson = Boolean(cmdOpts.json || cmdOpts.jsonFull);
         if (result.tweets) {
-          ctx.printTweetsResult(result, {
+          await ctx.printTweetsResult(result, {
             json: isJson,
             usePagination: pagination.usePagination,
             emptyMessage: 'No thread tweets found.',
